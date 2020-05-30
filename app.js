@@ -1,0 +1,1 @@
+var PieChart = angular.module('PieChart', ['cfchart']);
