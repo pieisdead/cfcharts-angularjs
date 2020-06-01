@@ -69,7 +69,6 @@ angular.module('cfchart', []).
                 var cv = Math.floor(parseFloat(val / max) * h);
                 nv.push(cv);
             });
-            console.log(nv);
             angular.forEach(nv, function(val, i) {
                 var posX = (bw * i);
                 ctx.beginPath();
@@ -132,17 +131,19 @@ angular.module('cfchart', []).
             });
             var maxes = [];
             var upper = 0;
+            var m = 0;
+            var av = [];
             angular.forEach(valueset, function(v, i) {
-                var m = 0;
+                angular.forEach(v.setValues, function(vv, ii) {
+                    av.push(parseFloat(vv));
+                });
+            });
+            m = Math.max.apply(Math, av);
+            angular.forEach(valueset, function(v, i) {
                 var factors = [];
                 var positions = [];
                 angular.forEach(v.setValues, function(val, ind) {
                     positions.push(val);
-                });
-                angular.forEach(positions, function(n, i) {
-                    if (n > m) {
-                        m = n;
-                    }
                 });
                  for (var k = 1; k < factor + 1; k++) {
                     factors.push(Math.floor(m / k));
