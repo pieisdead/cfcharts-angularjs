@@ -1,11 +1,15 @@
 <!doctype html>
-<html ng-app="PieChart">
+<html ng-app="ChartsApp" ng-controller="chartController">
 <head>
 <meta charset="utf-8">
-<title>Untitled Document</title>
+<title>AngularJS Charts</title>
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.9/angular.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400;1,600;1,700&display=swap');
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
         .col {
             width: auto;
             display: inline-block;
@@ -18,10 +22,13 @@
 <body>
     <h1>Pie chart</h1>
     <div class="col">
-        <piechart id="example" colors="#ff0000, #ffce00, #0062ff, #ff6700, #1fc90d" values="11, 55, 120, 32, 20" width="200" height="200"></piechart>
+        <piechart id="example" colors="#ff0000, #ffce00, #0062ff, #ff6700, #1fc90d" values="[11, 55, 120, 32, 20]" width="200" height="200"></piechart>
     </div>
     <div class="col">
-        <piechart id="exampleb" colors="#d1ef00, #606e00, #0062ff, #df9404, #734c02, #e13c02, #c50505" values="11, 55, 120, 32, 20, 110, 150" width="200" height="200"></piechart>
+        <piechart id="exampleb" colors="#d1ef00, #606e00, #0062ff, #df9404, #734c02, #e13c02, #c50505" values="[11, 55, 120, 32, 20, 110, 150]" width="200" height="200" background="#bdb3ca"></piechart>
+    </div>
+    <div class="col">
+        <piechart id="examplew" colors="#d1ef00, #606e00, #0062ff, #df9404, #734c02, #e13c02, #c50505, #5e0bcb" values="{{pieValues}}" width="100" height="100"></piechart>
     </div>
     <h1>Bar chart</h1>
     <div class="col">
@@ -30,16 +37,41 @@
     <div class="col">
         <barchart id="examplec" colors="#ff0000, #ffce00, #0062ff, #ff6700, #1fc90d, #0c988c, #680c98" values="100, 25, 126, 320, 520, 200, 55" width="400" height="300"></barchart>
     </div>
+    <div class="col">
+        <barchart id="examplex" colors="#ff0000, #ffce00, #0062ff, #ff6700, #1fc90d, #0c988c, #680c98, #5f03b0, #006ad3, #bb068e, #34a806, #cbc70b" values="10, 25, 126, 300, 320, 200, 55, 88, 105, 300, 212, 111" width="500" height="300" margin="0" factors="20"></barchart>
+    </div>
     <h1>Line chart</h1>
     <div class="col">
-        <linechart id="example3" values="[20, 50, 10, 60, 50, 77];[10, 30, 35, 50, 12, 70]" line-color="#ff0000, #0062ff" labels="2004, 2005, 2006, 2007, 2008, 2009"></linechart>
+        <linechart id="example3" values="[20, 50, 10, 60, 50, 77];[10, 30, 35, 50, 12, 70]" line-color="#ff0000, #0062ff" labels="2004, 2005, 2006, 2007, 2008, 2009" width="400" height="300"></linechart>
     </div>
     <div class="col">
-        <linechart id="exampled" values="[200, 55, 100, 80, 50, 77, 180];[10, 30, 35, 50, 12, 70, 100]" line-color="#ff0000, #0062ff" labels="2004, 2005, 2006, 2007, 2008, 2009, 2010"></linechart>
+        <linechart id="exampled" values="[200, 55, 100, 80, 50, 77, 180];[10, 30, 35, 50, 12, 70, 100]" line-color="#ff0000, #0062ff" labels="2004, 2005, 2006, 2007, 2008, 2009, 2010" width="400" height="300"></linechart>
+    </div>
+    <div class="col">
+        <linechart id="exampley" values="[200, 155, 100, 180, 50, 77, 180, 88, 90, 34, 22, 34];[10, 30, 35, 50, 12, 70, 100, 66, 39, 230, 20, 45];[100, 130, 135, 150, 112, 70, 99, 166, 39, 200, 120, 145]" line-color="#ff0000, #0062ff, #cbc70b" labels="2004, 2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015" width="500" height="300" points="false" factors="20"></linechart>
     </div>
     <h1>Radar chart</h1>
-    <radarchart id="example4" values="[20, 40, 10, 90, 50, 60, 23, 33];[12, 60, 55, 93, 34, 21, 77, 82]" colors="#ff0000, #0062ff" labels="1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001"></radarchart>
+    <div class="col">
+        <radarchart id="example4" values="[20, 40, 10, 90, 50, 60, 23, 33];[12, 60, 55, 93, 34, 21, 77, 82]" colors="#ff0000, #0062ff" labels="1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001" width="400" height="400" fill="true"></radarchart>
+    </div>
+    <div class="col">
+        <radarchart id="examplee" values="[20, 40, 10, 90, 50, 60, 23, 33, 44, 90];[12, 60, 55, 93, 34, 21, 77, 82, 88, 102]" colors="#ff0000, #0062ff" labels="1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003" width="400" height="400"></radarchart>
+    </div>
+    <div class="col">
+        <radarchart id="examplez" values="[20, 40, 10, 90, 50, 60, 23, 33];[12, 60, 55, 93, 34, 21, 77, 82]" colors="#ff0000, #0062ff" labels="1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001" width="300" height="300" fill="true"></radarchart>
+    </div>
+    <h1>Scatter chart</h1>
+    <div class="col">
+        <scatterchart id="example5" width="400" height="300" values="[200, 230, 100, 30, 66, 190, 199];[210, 130, 120, 34, 56, 98, 198];[110, 120, 100, 33, 59, 190, 188]" colors="#FF0000, #0062FF, #FC00FF" labels="1999, 2000, 2001, 2002, 2003, 2004, 2005"></scatterchart>
+    </div>
+    <div class="col">
+        <scatterchart id="examplef" width="400" height="300" values="[90, 50, 100, 130, 66, 190, 112];[12, 13, 55, 34, 56, 67, 122];[11, 12, 109, 33, 59, 120, 99]" colors="#a4ba05, #ffbb00, #fb00ff" labels="1999, 2000, 2001, 2002, 2003, 2004, 2005" factors="20"></scatterchart>
+    </div>
+    <div class="col">
+        <scatterchart id="exampleg" width="400" height="300" values="[90, 50, 100, 130, 66, 190, 112];[12, 13, 55, 34, 56, 67, 122];[11, 12, 109, 33, 59, 120, 99]" colors="#a4ba05, #ffbb00, #fb00ff" labels="1999, 2000, 2001, 2002, 2003, 2004, 2005" factors="10" background="#000000"></scatterchart>
+    </div>
     <script src="app.js"></script>
     <script src="cfchart.js"></script>
+    <script src="controller.js"></script>
 </body>
 </html>

@@ -1,1 +1,1 @@
-var PieChart = angular.module('PieChart', ['cfchart']);
+var ChartsApp = angular.module('ChartsApp', ['cfchart']);
