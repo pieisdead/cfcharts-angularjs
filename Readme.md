@@ -1,4 +1,4 @@
-#CFCharts AngularJS#
+# CFCharts AngularJS
 
 Add cfchart.js to your application
 

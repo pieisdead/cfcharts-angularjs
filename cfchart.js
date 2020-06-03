@@ -1,5 +1,19 @@
 angular.module('cfchart', []).
-    directive('piechart', [function() {
+service('chart',[function () {
+    this.hexToRgbA = function(hex) {
+        var c;
+        if (/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)) {
+            c = hex.substring(1).split('');
+            if (c.length== 3){
+                c= [c[0], c[0], c[1], c[1], c[2], c[2]];
+            }
+            c = '0x' + c.join('');
+            return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+',0.3)';
+        }
+        throw new Error('Bad Hex');
+    }
+}]).
+directive('piechart', [function() {
     return {
         restrict: 'E',
         replace: true,
@@ -46,8 +60,8 @@ angular.module('cfchart', []).
         restrict: 'E',
         replace: true,
         link: function(scope, elem, attrs) {
-            var vals = attrs.values.split(',');
-            var colors = attrs.colors.split(',');
+            var vals = attrs.values.split(', ');
+            var colors = attrs.colors.split(', ');
             var labels = attrs.labels !== undefined ? attrs.labels.split(', ') : false;
             var margin = attrs.margin !== undefined ? attrs.margin : 10;
             var factors = attrs.factors !== undefined ? attrs.factors : 10;
@@ -106,7 +120,7 @@ angular.module('cfchart', []).
         }
     }
 }])
-.directive('linechart', [function() {
+.directive('linechart', ['chart', function(chart) {
     return {
         restrict: 'E',
         replace: true,
@@ -119,22 +133,18 @@ angular.module('cfchart', []).
                     setValues: p
                 }
             });
-            var labels = attrs.labels.split(',');
-            var lineColors = attrs.lineColor.split(',');
+            var labels = attrs.labels.split(', ');
+            var lineColors = attrs.lineColor.split(', ');
             var points = attrs.points !== undefined ? attrs.points : true;
             var factor = attrs.factors !== undefined ? attrs.factors : 10;
             var background = attrs.background !== undefined ? attrs.background : false;
+            var fill = attrs.fill !== undefined ? attrs.fill : false;
             var c = attrs.id;
             var canvas = document.getElementById(c);
             var ctx = canvas.getContext("2d");
             var w = canvas.offsetWidth;
             var h = canvas.offsetHeight;
             var facHeight = h / factor;
-            if (background) {
-                ctx.fillStyle = background;
-                ctx.fillRect(0, 0, w, h);
-                ctx.closePath();
-            }
             ctx.strokeStyle = '#CCCCCC';
             for (var i = 0; i < factor; i++) {
                 ctx.beginPath();
@@ -183,6 +193,35 @@ angular.module('cfchart', []).
                         ctx.fill();
                     }
                 });
+                
+                
+            });
+            angular.forEach(valueset, function(v, i) {
+                 var factors = [];
+                var positions = [];
+                angular.forEach(v.setValues, function(val, ind) {
+                    positions.push(val);
+                });
+                 for (var k = 1; k < factor + 1; k++) {
+                    factors.push(Math.floor(m / k));
+                }
+                maxes.push(Math.max(factors[i]));
+                ctx.strokeStyle = lineColors[i];
+                ctx.beginPath();
+                if (fill === 'true') {
+                    angular.forEach(positions, function(val, ind) {
+                        var pos = Math.floor((val / m) * h);
+                        ctx.moveTo(ind * tabWidth, h - pos);
+                        var nv = positions[ind+1] / m * h;
+                        ctx.lineTo((ind + 1) * tabWidth, h - nv);
+                        ctx.lineTo((ind) * tabWidth, h);
+                        ctx.lineTo(0, h);
+
+                    });
+                    ctx.fillStyle = chart.hexToRgbA(lineColors[i]);
+                        ctx.fill();
+                        ctx.closePath();
+                }
             });
             upper = Math.max.apply(Math, maxes);
             ctx.fillStyle = "#CCCCCC";
@@ -190,28 +229,31 @@ angular.module('cfchart', []).
             for (var l = 1; l <= factor; l++) {
                 ctx.fillText(Math.round(ph * l), w - 10, h - (l * facHeight) + 5);
             }
+            
         },
         template: function(scope, elem, attrs) {
             return '<canvas width="' + $(elem).attr('width') + '" height="' + $(elem).attr('height') + '"></canvas>';
         }
     }
 }])
-.directive('radarchart', [function() {
+.directive('radarchart', ['chart', function(chart) {
    return {
        restrict: 'E',
        replace: true,
+       scope: true,
        link: function(scope, elem, attrs) {
            var inp = attrs.values.split(';');
            var valueset = {};
             angular.forEach(inp, function(v, i) {
-            var p = v.replace('[', '').replace(']', '').split(',');
+            var p = v.replace('[', '').replace(']', '').split(', ');
                 valueset[i] = {
                     setValues: p
                 }
             });
-           var labels = attrs.labels.split(',');
-           var colors = attrs.colors.split(',');
+           var labels = attrs.labels.split(', ');
+           var colors = attrs.colors.split(', ');
            var fill = attrs.fill !== undefined ? attrs.fill : false;
+           var points = attrs.points !== undefined ? attrs.points : true;
            var canvas = document.getElementById(attrs.id);
            var ctx = canvas.getContext('2d');
            var w = canvas.offsetWidth;
@@ -222,22 +264,11 @@ angular.module('cfchart', []).
            var valArray = [];
            ctx.fillStyle = "#CCCCCC";
            ctx.font = "14px 'Lato'";
-           function hexToRgbA(hex){
-                var c;
-                if(/^#([A-Fa-f0-9]{3}){1,2}$/.test(hex)){
-                    c= hex.substring(1).split('');
-                    if(c.length== 3){
-                        c= [c[0], c[0], c[1], c[1], c[2], c[2]];
-                    }
-                    c= '0x'+c.join('');
-                    return 'rgba('+[(c>>16)&255, (c>>8)&255, c&255].join(',')+',0.3)';
-                }
-                throw new Error('Bad Hex');
-            }
+           
             for (var n = 0; n < labels.length; n++) {
                 ctx.fillText(labels[n], centerx + 200 * Math.cos(n * 2 * Math.PI / hfrac), centery + 200 * Math.sin(n * 2 * Math.PI / hfrac));
             } 
-           angular.forEach(valueset, function(v, i) {
+            angular.forEach(valueset, function(v, i) {
                valArray = [];
 				var headArray = [];
 				var incVals = [];
@@ -253,7 +284,7 @@ angular.module('cfchart', []).
                     ctx.strokeStyle = "#CCCCCC";
                     ctx.lineTo(centerx + (w / 2) * Math.cos(k * 2 * Math.PI / valArray.length), centery + (h / 2) * Math.sin(k * 2 * Math.PI / valArray.length));
                     ctx.stroke();
-                    ctx.moveTo(centerx, centery);  
+                    ctx.moveTo(centerx, centery);
                }
                currentFactor = 0;
                 if (stime < 100) {
@@ -291,10 +322,12 @@ angular.module('cfchart', []).
                 for (var m = 0; m < valArray.length; m++) {
                     ctx.lineTo(centerx + incVals[m] * 1.7 * Math.cos(m * 2 * Math.PI / valArray.length), centery + incVals[m] * 1.7 * Math.sin(m * 2 * Math.PI / valArray.length));
                     ctx.stroke();
-                    ctx.fillStyle = colors[i];
-                    ctx.beginPath()
-                    ctx.arc(centerx + incVals[m] * 1.7 * Math.cos(m * 2 * Math.PI / valArray.length), centery + incVals[m] * 1.7 * Math.sin(m * 2 * Math.PI / valArray.length), 5, 0, Math.PI * 2);
-                    ctx.fill();
+                    if (points !== 'false') {
+                        ctx.fillStyle = colors[i];
+                        ctx.beginPath()
+                        ctx.arc(centerx + incVals[m] * 1.7 * Math.cos(m * 2 * Math.PI / valArray.length), centery + incVals[m] * 1.7 * Math.sin(m * 2 * Math.PI / valArray.length), 5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
                 }
                 ctx.lineTo(centerx + incVals[0] * 1.7 * Math.cos(0), centery + incVals[0] * 1.7 * Math.sin(0));
                 ctx.stroke();
@@ -306,7 +339,7 @@ angular.module('cfchart', []).
 						ctx.lineTo(centerx + incVals[j] * 1.7 * Math.cos(j * 2 * Math.PI / valArray.length), centery + incVals[j] * 1.7 * Math.sin(j * 2 * Math.PI / valArray.length));
 					}
 					ctx.lineTo(centerx + incVals[0] * 1.7 * Math.cos(0), centery + incVals[0] * 1.7 * Math.sin(0));
-					ctx.fillStyle = hexToRgbA(colors[i]);
+					ctx.fillStyle = chart.hexToRgbA(colors[i]);
 					ctx.fill();
 					ctx.closePath();
                }
@@ -334,13 +367,13 @@ angular.module('cfchart', []).
             var inp = attrs.values.split(';');
             var valueset = {};
             angular.forEach(inp, function(v, i) {
-            var p = v.replace('[', '').replace(']', '').split(',');
+            var p = v.replace('[', '').replace(']', '').split(', ');
                 valueset[i] = {
                     setValues: p
                 }
             });
-            var colors = attrs.colors.split(',');
-            var labels = attrs.labels.split(',');
+            var colors = attrs.colors.split(', ');
+            var labels = attrs.labels.split(', ');
             var factor = attrs.factors !== undefined ? attrs.factors : 10;
             var background = attrs.background !== undefined ? attrs.background : false;
             var canvas = document.getElementById(attrs.id);
@@ -407,6 +440,45 @@ angular.module('cfchart', []).
         },
         template: function(scope, elem, attrs) {
             return '<canvas width="' + $(elem).attr('width') + '" height="' + $(elem).attr('height') + '"></canvas>';
+        }
+    }
+}])
+.directive('donutchart', [function() {
+    return {
+        restrict: 'E',
+        replace: true,
+        link: function(scope, elem, attrs) {
+            var values = attrs.values.replace('[', '').replace(']', '').split(',');
+            var colors = attrs.colors.split(',');
+            var size = attrs.size !== undefined ? parseFloat(attrs.size) : 30;
+            
+            var nv = [];
+            for (var j = 0; j < values.length; j++) {
+                nv.push(values[j]);
+            }
+            var canvas = document.getElementById(attrs.id);
+            var ctx = canvas.getContext("2d");
+            var lastend = 0;
+            var myTotal = 0; 
+            for (var e = 0; e < nv.length; e++) {
+              myTotal += parseInt(nv[e]);
+            }
+            var cw = canvas.offsetWidth - size;
+            var ch = canvas.offsetHeight - size;
+            
+            for (var i = 0; i < nv.length; i++) {
+                  ctx.strokeStyle = colors[i];
+                  ctx.lineWidth = size;
+                  ctx.beginPath();
+                  
+                  ctx.arc(size / 2 + cw / 2, size / 2 + ch / 2, ch / 2, lastend, lastend + (Math.PI * 2 * (nv[i] / myTotal)), false);
+                  
+                  ctx.stroke();
+                  lastend += Math.PI * 2 * (nv[i] / myTotal);
+             }
+        },
+        template: function(scope, elem, attrs) {
+            return '<canvas width="200" height="200"></canvas>';
         }
     }
 }]);
