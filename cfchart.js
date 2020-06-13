@@ -478,7 +478,7 @@ directive('piechart', [function() {
              }
         },
         template: function(scope, elem, attrs) {
-            return '<canvas width="200" height="200"></canvas>';
+            return '<canvas width="' + $(elem).attr('width') + '" height="' + $(elem).attr('height') + '"></canvas>';
         }
     }
 }]);
