@@ -23,3 +23,6 @@ Add a chart in HTML
 ```html
 <scatterchart id="myChart" width="400" height="300" values="[200, 230, 100, 30, 66, 190, 199];[210, 130, 120, 34, 56, 98, 198];[110, 120, 100, 33, 59, 190, 188]" colors="#FF0000, #0062FF, #FC00FF" labels="1999, 2000, 2001, 2002, 2003, 2004, 2005"></scatterchart>
 ```
+```html
+<donutchart id="exampleh" values="[200, 100, 30, 55, 90, 134]" colors="#d1ef00, #606e00, #0062ff, #df9404, #734c02, #e13c02" width="200" height="200"></donutchart>
+```
