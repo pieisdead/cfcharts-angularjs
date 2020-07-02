@@ -1,5 +1,7 @@
 # CFCharts AngularJS
 
+Basic AngularJS charts.
+
 Add cfchart.js to your application
 
 ```javascript
